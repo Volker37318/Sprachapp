@@ -22,18 +22,20 @@ app.get("/gpt", (req, res) => {
 // ✅ 2. POST für GPT-Antworten
 app.post("/gpt", async (req, res) => {
   try {
+    const modelName = req.body.model || "gpt-4o"; // Fallback-Modell, wenn nichts übergeben wurde
+
     const completion = await openai.chat.completions.create({
-      model: req.body.model,
+      model: modelName,
       messages: req.body.messages,
       temperature: req.body.temperature || 0.7
     });
+
     res.json(completion);
   } catch (error) {
     console.error("GPT-Fehler:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // ✅ 3. GET für Whisper-Cronjob
 app.get("/whisper", (req, res) => {
