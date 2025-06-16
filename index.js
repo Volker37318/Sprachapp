@@ -10,6 +10,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// ✅ NEU: GET-Anfrage auf /gpt (z. B. für cron-job.org)
+app.get("/gpt", (req, res) => {
+  res.status(200).send("✅ GPT-Proxy ist aktiv (GET erlaubt)");
+});
+
 app.post("/gpt", async (req, res) => {
   try {
     const completion = await openai.chat.completions.create({
