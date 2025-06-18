@@ -4,6 +4,9 @@ const multer = require("multer");
 const OpenAI = require("openai");
 const fs = require("fs");
 
+// --- fetch für Node.js (einmalig hinzufügen!) ---
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -12,7 +15,6 @@ const upload = multer({ dest: "uploads/" });
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-
 
 // ✅ 1. GET für GPT-Cronjob
 app.get("/gpt", (req, res) => {
@@ -61,8 +63,25 @@ app.post("/whisper", upload.single("file"), async (req, res) => {
   }
 });
 
-
 // ✅ 5. Serverstart
 app.listen(3000, () => {
   console.log("✅ GPT- und Whisper-Proxy laufen auf Port 3000");
 });
+
+// ---------- WARMUP-BLOCK AB HIER EINBAUEN ----------
+setTimeout(() => {
+  fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [{role: "system", content: "Warmup"}]
+    })
+  })
+    .then(res => console.log("OpenAI-Warmup-Status:", res.status))
+    .catch(err => console.log("OpenAI-Warmup-Fehler:", err.message));
+}, 4000);
+// ---------- ENDE WARMUP-BLOCK ----------
